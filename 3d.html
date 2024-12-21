@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matrix Chat</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: "Courier New", Courier, monospace;
+      background-color: #181818;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .main-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: 90%;
+      height: 80vh;
+      padding: 10px;
+      position: relative;
+    }
+
+    /* Oldalsó menü */
+    .menu {
+      width: 250px;
+      background-color: #111;
+      color: #0f0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .menu h2 {
+      margin-bottom: 20px;
+    }
+
+    .menu ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .menu ul li {
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .menu ul li:hover {
+      color: #fff;
+    }
+
+    /* Chat konténer */
+    .chat-container {
+      width: 100%;
+      height: 90%;
+      background-color: #111;
+      border-radius: 10px;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    /* Üzenetek */
+    .message {
+      display: flex;
+      margin-bottom: 15px;
+    }
+
+    .message.desktop {
+      justify-content: flex-start;
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message .bubble {
+      max-width: 70%;
+      padding: 10px;
+      border-radius: 20px;
+      background-color: #444;
+      color: #0f0;
+      font-size: 18px;
+    }
+
+    .message.user .bubble {
+      background-color: #0f0;
+      color: #111;
+    }
+
+    /* Beviteli mező */
+    .input-container {
+      width: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #222;
+      padding: 10px;
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 0 0 10px 10px;
+      z-index: 10; /* Biztosítjuk, hogy a beviteli mező mindig a legfelső rétegen legyen */
+    }
+
+    .input-container input {
+      width: 70%;
+      padding: 10px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      background-color: #333;
+      color: #fff;
+      font-size: 18px;
+    }
+
+    .input-container button {
+      padding: 10px;
+      border-radius: 20px;
+      background-color: #0f0;
+      color: #111;
+      font-size: 18px;
+      border: none;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .input-container button:hover {
+      background-color: #333;
+    }
+
+    /* Scroll animáció */
+    .chat-container {
+      scroll-behavior: smooth;
+    }
+
+    /* 3D Kocka Animáció */
+    .cube-container {
+      position: absolute;
+      left: 120px;
+      top: 50%;
+      margin-top: 20px;
+      width: 150px;
+      height: 150px;
+      perspective: 500px;
+    }
+
+    .cube {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transform: rotateX(0deg) rotateY(0deg);
+      animation: rotateCube 5s infinite linear;
+    }
+
+    .cube div {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(71, 248, 71, 0.8);
+      border: 2px solid rgb(0, 37, 0);
+      box-sizing: border-box;
+    }
+
+    .front  { transform: translateZ(75px); }
+    .back   { transform: rotateY(180deg) translateZ(75px); }
+    .left   { transform: rotateY(-90deg) translateZ(75px); }
+    .right  { transform: rotateY(90deg) translateZ(75px); }
+    .top    { transform: rotateX(90deg) translateZ(75px); }
+    .bottom { transform: rotateX(-90deg) translateZ(75px); }
+
+    @keyframes rotateCube {
+      0% {
+        transform: rotateX(0deg) rotateY(0deg);
+      }
+      100% {
+        transform: rotateX(360deg) rotateY(360deg);
+      }
+    }
+
+    /* Kacsa ikon stílus */
+    .duck-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+    }
+
+    .duck-body {
+      width: 40px;
+      height: 30px;
+      background-color: rgb(14, 138, 3);
+      position: relative;
+    }
+
+    .duck-wing {
+      width: 10px;
+      height: 20px;
+      background-color: orange;
+      position: absolute;
+      top: 5px;
+      left: -5px;
+      transform: rotate(-20deg);
+    }
+
+    .duck-head {
+      width: 20px;
+      height: 20px;
+      background-color: yellow;
+      border-radius: 50%;
+      position: absolute;
+      top: -10px;
+      left: 10px;
+    }
+
+    .duck-beak {
+      width: 10px;
+      height: 5px;
+      background-color: orange;
+      position: absolute;
+      top: 5px;
+      left: 15px;
+    }
+
+    /* Kérdőjel és Írj közötti sortörés kezelése */
+    .message.desktop {
+      white-space: pre-wrap; /* Engedélyezi a sortörést a szövegben */
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-container">
+    <!-- Oldalsó menü -->
+    <div class="menu">
+      <h2>Menü</h2>
+      <ul>
+        <li onclick="selectTopic('1')">1. Regisztráció</li>
+        <li onclick="selectTopic('2')">2. Login</li>
+        <li onclick="selectTopic('3')">3. Letöltés</li>
+      </ul>
+    </div>
+
+    <!-- Chat konténer -->
+    <div class="chat-container" id="chatContainer">
+      <!-- Üzenetek itt jelennek meg -->
+    </div>
+  </div>
+
+  <!-- 3D Kocka alul -->
+  <div class="cube-container">
+    <div class="cube">
+      <div class="front"></div>
+      <div class="back"></div>
+      <div class="left"></div>
+      <div class="right"></div>
+      <div class="top"></div>
+      <div class="bottom"></div>
+    </div>
+  </div>
+
+  <!-- Kacsa ikon -->
+  <div class="duck-icon" id="minecraftDuck">
+    <div class="duck-body">
+      <div class="duck-wing"></div>
+      <div class="duck-head">
+        <div class="duck-beak"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Beviteli mező -->
+  <div class="input-container">
+    <input type="text" id="userInput" placeholder="Írj egy üzenetet..." autofocus />
+    <button id="sendMessageButton">Küldés</button>
+    <button id="clearChatButton">Törlés</button>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById("chatContainer");
+    const userInput = document.getElementById("userInput");
+    const sendMessageButton = document.getElementById("sendMessageButton");
+    const clearChatButton = document.getElementById("clearChatButton");
+    const minecraftDuck = document.getElementById("minecraftDuck");
+
+    let registrationData = {
+      fullName: '',
+      email: '',
+      username: '',
+      password: '',
+      passwordConfirmation: ''
+    };
+
+    let currentStep = 0; // Különböző lépések a regisztráció során
+
+    // Kezdő üzenet
+    function displayMessage(message, sender = 'desktop') {
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("message", sender); // 'desktop' vagy 'user'
+      
+      const bubbleDiv = document.createElement("div");
+      bubbleDiv.classList.add("bubble");
+      bubbleDiv.textContent = message;
+      
+      messageDiv.appendChild(bubbleDiv);
+      chatContainer.appendChild(messageDiv);
+
+      chatContainer.scrollTop = chatContainer.scrollHeight; // Görgetés az új üzenethez
+    }
+
+    // Kezdő üzenet
+    displayMessage("Desktop: Hogyan segíthetek? Írj egy számot: 1 - Regisztráció, 2 - Login, 3 - Letöltés", 'desktop');
+
+    // Felhasználó üzenetének kezelése
+    function handleUserInput(input) {
+      if (currentStep === 0) {
+        if (input === "1" || input.toLowerCase() === "regisztráció") {
+          startRegistration();
+        } else if (input === "2" || input.toLowerCase() === "login") {
+          startLogin();
+        } else if (input === "3" || input.toLowerCase() === "letöltés") {
+          startDownload();
+        }
+      } else {
+        handleRegistrationInput(input);
+      }
+    }
+
+    sendMessageButton.addEventListener("click", () => {
+      const userMessage = userInput.value.trim();
+      if (userMessage !== "") {
+        displayMessage(userMessage, 'user'); // Felhasználó üzenete
+        handleUserInput(userMessage);
+        userInput.value = ""; // Beviteli mező ürítése
+      }
+    });
+
+    // Ha Enter-t nyomunk
+    userInput.addEventListener("keypress", (event) => {
+      if (event.key === "Enter") {
+        const userMessage = userInput.value.trim();
+        if (userMessage !== "") {
+          displayMessage(userMessage, 'user');
+          handleUserInput(userMessage);
+          userInput.value = ""; // Beviteli mező ürítése
+        }
+      }
+    });
+
+    // Törlés gomb eseménykezelője
+    clearChatButton.addEventListener("click", () => {
+      chatContainer.innerHTML = "";
+      displayMessage("Desktop: Hogyan segíthetek? Írj egy számot: 1 - Regisztráció, 2 - Login, 3 - Letöltés", 'desktop');
+    });
+
+    // Minecraft kacsa hápogás
+    minecraftDuck.addEventListener("click", () => {
+      const quack = new Audio("https://example.com/quack.mp3"); // Hápogó hang linkje
+      quack.play();
+    });
+
+    // Regisztrációs folyamat
+    function startRegistration() {
+      currentStep = 1;
+      displayMessage("Desktop: Kérem adja meg a teljes nevét.", 'desktop');
+    }
+
+    // Regisztrációs adatbekérés
+    function handleRegistrationInput(input) {
+      if (currentStep === 1) {
+        registrationData.fullName = input;
+        displayMessage("Desktop: Kérem adja meg a felhasználónevét.", 'desktop');
+        currentStep = 2;
+      } else if (currentStep === 2) {
+        registrationData.username = input;
+        displayMessage("Desktop: Kérem adja meg az e-mail címét.", 'desktop');
+        currentStep = 3;
+      } else if (currentStep === 3) {
+        registrationData.email = input;
+        displayMessage("Desktop: Kérem adja meg a jelszót.", 'desktop');
+        currentStep = 4;
+      } else if (currentStep === 4) {
+        registrationData.password = input;
+        displayMessage("Desktop: Kérem erősítse meg a jelszót.", 'desktop');
+        currentStep = 5;
+      } else if (currentStep === 5) {
+        registrationData.passwordConfirmation = input;
+        if (registrationData.password === registrationData.passwordConfirmation) {
+          displayMessage("Desktop: A jelszavak egyeznek. Elküldi a regisztrációt?", 'desktop');
+          currentStep = 6;
+        } else {
+          displayMessage("Desktop: A jelszavak nem egyeznek. Kérem próbálja újra.", 'desktop');
+          currentStep = 4;
+        }
+      } else if (currentStep === 6) {
+        if (input.toLowerCase() === "igen") {
+          saveRegistrationData();
+        } else {
+          displayMessage("Desktop: A regisztrációt nem küldte el.", 'desktop');
+          currentStep = 0;
+        }
+      }
+    }
+
+    // Regisztráció mentése
+    function saveRegistrationData() {
+      displayMessage("Desktop: A regisztráció sikeresen elmentve!", 'desktop');
+      currentStep = 0;
+    }
+  </script>
+
+</body>
+</html>
