@@ -42,6 +42,7 @@
       padding: 20px;
       display: flex;
       flex-direction: column;
+      border-radius: -10%;
     }
 
     .menu h2 {
@@ -253,6 +254,9 @@
 </head>
 <body>
 
+  <!-- Hápogó hang -->
+  <audio id="quackSound" src="bebek.mp3" preload="auto"></audio>
+
   <div class="main-container">
     <!-- Oldalsó menü -->
     <div class="menu">
@@ -305,16 +309,14 @@
     const sendMessageButton = document.getElementById("sendMessageButton");
     const clearChatButton = document.getElementById("clearChatButton");
     const minecraftDuck = document.getElementById("minecraftDuck");
+    const quackSound = document.getElementById("quackSound");
 
-    let registrationData = {
-      fullName: '',
-      email: '',
-      username: '',
-      password: '',
-      passwordConfirmation: ''
+    let loginData = {
+      usernameOrEmail: '',
+      password: ''
     };
 
-    let currentStep = 0; // Különböző lépések a regisztráció során
+    let currentStep = 0; // Különböző lépések a login során
 
     // Kezdő üzenet
     function displayMessage(message, sender = 'desktop') {
@@ -344,6 +346,8 @@
         } else if (input === "3" || input.toLowerCase() === "letöltés") {
           startDownload();
         }
+      } else if (currentStep === 1 || currentStep === 2) {
+        handleLoginInput(input);
       } else {
         handleRegistrationInput(input);
       }
@@ -378,16 +382,30 @@
 
     // Minecraft kacsa hápogás
     minecraftDuck.addEventListener("click", () => {
-      const quack = new Audio("https://example.com/quack.mp3"); // Hápogó hang linkje
-      quack.play();
+      quackSound.play(); // A bebek.mp3 fájl lejátszása
     });
-
+    // Login folyamat
+    function startLogin() {
+      currentStep = 1;
+      displayMessage("Desktop: Kérem adja meg a felhasználó nevét vagy az email címét.", 'desktop');
+    }
+    // Login adatbekérés
+    function handleLoginInput(input) {
+      if (currentStep === 1) {
+        loginData.usernameOrEmail = input;
+        displayMessage("Desktop: Kérem adja meg a jelszavát.", 'desktop');
+        currentStep = 2;
+      } else if (currentStep === 2) {
+        loginData.password = input;
+        displayMessage("Desktop: A bejelentkezés sikeres!", 'desktop');
+        currentStep = 0;
+      }
+    }
     // Regisztrációs folyamat
     function startRegistration() {
       currentStep = 1;
       displayMessage("Desktop: Kérem adja meg a teljes nevét.", 'desktop');
     }
-
     // Regisztrációs adatbekérés
     function handleRegistrationInput(input) {
       if (currentStep === 1) {
@@ -424,13 +442,11 @@
         }
       }
     }
-
     // Regisztráció mentése
     function saveRegistrationData() {
       displayMessage("Desktop: A regisztráció sikeresen elmentve!", 'desktop');
       currentStep = 0;
     }
   </script>
-
 </body>
 </html>
