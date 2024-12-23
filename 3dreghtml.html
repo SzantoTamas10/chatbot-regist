@@ -133,17 +133,17 @@
     }
 
     .input-container {
-      width: 50%;
+      width: 40%;
       display: flex;
       justify-content: center;
       align-items: center;
       background-color: #222;
-      padding: 10px;
+      padding: 20px;
       position: fixed;
-      bottom: 0;
-      left: 50%;
+      bottom: 40px;
+      left: 60%;
       transform: translateX(-50%);
-      border-radius: 0 0 10px 10px;
+      border-radius: 10px 10px 10px 10px;
       z-index: 10;
     }
 
@@ -189,7 +189,7 @@
       height: 100%;
       transform-style: preserve-3d;
       transform: rotateX(0deg) rotateY(0deg);
-      animation: rotateCube 5s infinite linear;
+      animation: rotateCube 15s infinite linear;
     }
 
     .cube div {
@@ -265,7 +265,40 @@
     .message.Oraculum {
       white-space: pre-wrap;
     }
-  </style>
+ /* Animációs container */
+.save-animation {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 16px;
+  line-height: 1.5;  
+  color: #00ff00;
+  white-space: pre-wrap;
+  background-color: #000000; /* Fekete háttér */
+  padding: 20px;
+  margin-top: 4px;
+  border-radius: 5px; /* Lekerekített sarkok */
+  position: relative;
+  height: 35px; /* Csak egy sor helyet foglaljon */
+  overflow: hidden; /* Ne legyen belső scroll */
+  overflow-x: auto;
+}
+
+/* Egyetlen animált sor */
+.matrix-line {
+  display: block;
+  text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+  animation: fade-in-out 1s ease-in-out infinite;
+}
+
+/* Fade-in-out animáció */
+@keyframes fade-in-out {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+</style>
 </head>
 <body>
 
@@ -373,7 +406,7 @@ function handleUserInput(input) {
     }
   } else if (currentStep >= 1 && currentStep <= 6) {
     handleRegistrationInput(input); // Regisztrációs adatok kezelése.
-  } else if (currentStep >= 7 && currentStep <= 8) {
+  } else if (currentStep >= 7.1 && currentStep <= 8) {
     handleLoginInput(input); // Bejelentkezési adatok kezelése.
   }
 }
@@ -413,7 +446,7 @@ minecraftDuck.addEventListener("click", () => {
 
 // Bejelentkezési folyamat indítása.
 function startLogin() {
-  currentStep = 7; // Első lépés a bejelentkezésnél.
+  currentStep = 7.1; // Első lépés a bejelentkezésnél.
   displayMessage("Oraculum: Essünk túl a nyilvánvaló dolgokon: Kérlek add meg a felhasználóneved vagy email címed.", 'Oraculum');
 }
 
@@ -422,17 +455,26 @@ let loginSubStep = 0; // Alfejezet számláló.
 
 function handleLoginInput(input) {
   if (currentStep === 7) {
-    loginData.usernameOrEmail = input; // Felhasználónév vagy email mentése.
-    loginSubStep = 1; // Alfejezet számláló kezdő értéke.
-    displayMessage(`Oraculum: [7.${loginSubStep}] Kérem adja meg a jelszavát.`, 'Oraculum');
-    currentStep = 8; // Következő lépés.
-    loginSubStep++;
+    if (!input) {
+      // Ha a bemenet üres, újra kérjük az adatot.
+      displayMessage("Oraculum: A felhasználónév vagy e-mail nem lehet üres. Kérlek, add meg újra.", 'Oraculum');
+    } else {
+      loginData.usernameOrEmail = input; // Felhasználónév vagy e-mail mentése.
+      displayMessage("Oraculum: Kérlek add meg a jelszavad.", 'Oraculum');
+      currentStep = 8; // Következő lépés.
+    }
   } else if (currentStep === 8) {
-    loginData.password = input; // Jelszó mentése.
-    displayMessage(`Oraculum: [7.${loginSubStep}] A bejelentkezés sikeres!`, 'Oraculum');
-    currentStep = 0; // Vissza az alapállapotba.
+    if (!input) {
+      // Ha a jelszó nincs megadva, ismét bekérjük.
+      displayMessage("Oraculum: A jelszó nem lehet üres. Kérlek, add meg újra.", 'Oraculum');
+    } else {
+      loginData.password = input; // Jelszó mentése.
+      displayMessage("Oraculum: A bejelentkezés sikeres!", 'Oraculum');
+      currentStep = 0; // Vissza az alapállapotba.
+    }
   }
 }
+
 
 // Regisztráció indítása.
 function startRegistration() {
@@ -476,27 +518,51 @@ function handleRegistrationInput(input) {
     }
   }
 }
-
-// A regisztrációs adatok mentése (sikeres).
-function saveRegistrationData() {
-  displayMessage("Oraculum: A regisztráció sikeresen elmentve!", 'Oraculum');
-  currentStep = 0; // Vissza az alapállapotba.
-}
-
-// Billentyűzet események a csevegő görgetéséhez.
-document.addEventListener("keydown", (event) => {
-  const chatContainer = document.querySelector(".chat-container");
-  if (!chatContainer) return;
-
-  const scrollStep = 40; // Görgetés mértéke (px).
-  if (event.key === "ArrowDown") {
-    chatContainer.scrollBy({ top: scrollStep, behavior: "smooth" }); // Görgetés lefelé.
-  } else if (event.key === "ArrowUp") {
-    chatContainer.scrollBy({ top: -scrollStep, behavior: "smooth" }); // Görgetés felfelé.
+  function saveRegistrationData() {
+    runSaveAnimation(() => {
+      // Az animáció után jelenjen meg az üzenet
+      displayMessage("Oraculum: A regisztráció sikeresen elmentve!", "Oraculum");
+    });
+    currentStep = 0; // Reset állapot.
   }
-});
+
+  function runSaveAnimation(callback) {
+    const animationDiv = document.createElement("div");
+    animationDiv.classList.add("save-animation");
+    chatContainer.appendChild(animationDiv);
+
+    // Egyetlen gépi kódos sor
+    const lineDiv = document.createElement("div");
+    lineDiv.classList.add("matrix-line");
+    animationDiv.appendChild(lineDiv);
+
+    // Minden 100 ms-ban frissítjük a sort új gépi kóddal
+    const interval = setInterval(() => {
+      lineDiv.textContent = generateMatrixLine();
+
+      // A chat-container scrollja automatikusan az aljára
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 100);
+
+    // 5 másodperc után állítsuk le az animációt
+    setTimeout(() => {
+      clearInterval(interval);
+      animationDiv.style.opacity = "0"; // Fade-out hatás
+      setTimeout(() => {
+        chatContainer.removeChild(animationDiv);
+        if (callback) callback(); // Meghívja a callback-et (üzenet megjelenítése)
+      }, 1000); // Törlés fade-out után.
+    }, 5000);
+  }
+
+  function generateMatrixLine() {
+    let line = "";
+    for (let i = 0; i < 50; i++) {
+      line += Math.random() > 0.5 ? "1" : "0";
+    }
+    return line;
+  }
 
     </script>
   </body>
-  </html>
-  
+</html>
