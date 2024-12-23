@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matrix Chat</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: "Courier New", Courier, monospace;
+      background-color: #181818;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .main-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: 90%;
+      height: 80vh;
+      padding: 10px;
+      position: relative;
+    }
+
+    .menu {
+      width: 250px;
+      background-color: #111;
+      color: #0f0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      border-radius: -10%;
+    }
+
+    .menu h2 {
+      margin-bottom: 20px;
+    }
+
+    .menu ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .menu ul li {
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .menu ul li:hover {
+      color: #fff;
+    }
+
+    .chat-container {
+      width: 100%;
+      height: 90%;
+      background-color: #111;
+      border-radius: 10px;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      scroll-behavior: smooth;
+    }
+
+    .chat-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .chat-container::-webkit-scrollbar-track {
+      background: #00ff00;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb:hover {
+      background: #666;
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 15px;
+    }
+
+    .message.Oraculum {
+      justify-content: flex-start;
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message .bubble {
+      max-width: 70%;
+      padding: 10px;
+      border-radius: 20px;
+      background-color: #444;
+      color: #0f0;
+      font-size: 18px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .message.user .bubble {
+      background-color: #0f0;
+      color: #111;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .input-container {
+      width: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #222;
+      padding: 10px;
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 0 0 10px 10px;
+      z-index: 10;
+    }
+
+    .input-container input {
+      width: 70%;
+      padding: 10px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      background-color: #333;
+      color: #fff;
+      font-size: 18px;
+    }
+
+    .input-container button {
+      padding: 10px;
+      border-radius: 20px;
+      background-color: #0f0;
+      color: #111;
+      font-size: 18px;
+      border: none;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .input-container button:hover {
+      background-color: #333;
+    }
+
+    .cube-container {
+      position: absolute;
+      left: 120px;
+      top: 50%;
+      margin-top: 20px;
+      width: 150px;
+      height: 150px;
+      perspective: 500px;
+    }
+
+    .cube {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transform: rotateX(0deg) rotateY(0deg);
+      animation: rotateCube 5s infinite linear;
+    }
+
+    .cube div {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(71, 248, 71, 0.8);
+      border: 2px solid rgb(0, 37, 0);
+      box-sizing: border-box;
+    }
+
+    .front  { transform: translateZ(75px); }
+    .back   { transform: rotateY(180deg) translateZ(75px); }
+    .left   { transform: rotateY(-90deg) translateZ(75px); }
+    .right  { transform: rotateY(90deg) translateZ(75px); }
+    .top    { transform: rotateX(90deg) translateZ(75px); }
+    .bottom { transform: rotateX(-90deg) translateZ(75px); }
+
+    @keyframes rotateCube {
+      0% { transform: rotateX(0deg) rotateY(0deg); }
+      100% { transform: rotateX(360deg) rotateY(360deg); }
+    }
+
+    .duck-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+    }
+
+    .duck-body {
+      width: 40px;
+      height: 30px;
+      background-color: rgb(14, 138, 3);
+      position: relative;
+    }
+
+    .duck-wing {
+      width: 10px;
+      height: 20px;
+      background-color: orange;
+      position: absolute;
+      top: 5px;
+      left: -5px;
+      transform: rotate(-20deg);
+    }
+
+    .duck-head {
+      width: 20px;
+      height: 20px;
+      background-color: yellow;
+      border-radius: 50%;
+      position: absolute;
+      top: -10px;
+      left: 10px;
+    }
+
+    .duck-beak {
+      width: 10px;
+      height: 5px;
+      background-color: orange;
+      position: absolute;
+      top: 5px;
+      left: 15px;
+    }
+
+    .message.Oraculum {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+    <audio id="quackSound" src="bebek.mp3" preload="auto"></audio>
+  
+    <div class="main-container">
+      <div class="menu">
+        <h2>Menü</h2>
+        <ul>
+          <li onclick="selectTopic('1')">1. Regisztráció</li>
+          <li onclick="selectTopic('2')">2. Login</li>
+          <li onclick="selectTopic('3')">3. Letöltés</li>
+        </ul>
+      </div>
+  
+      <div class="chat-container" id="chatContainer">
+      </div>
+    </div>
+  
+    <div class="cube-container">
+      <div class="cube">
+        <div class="front"></div>
+        <div class="back"></div>
+        <div class="left"></div>
+        <div class="right"></div>
+        <div class="top"></div>
+        <div class="bottom"></div>
+      </div>
+    </div>
+  
+    <div class="duck-icon" id="minecraftDuck">
+      <div class="duck-body">
+        <div class="duck-wing"></div>
+        <div class="duck-head">
+          <div class="duck-beak"></div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="input-container">
+      <input type="text" id="userInput" placeholder="Írj egy üzenetet..." autofocus />
+      <button id="sendMessageButton">Küldés</button>
+      <button id="clearChatButton">Törlés</button>
+    </div>
+  
+    <script>
+     // Az üzenet megjelenítési területének referenciája.
+const chatContainer = document.getElementById("chatContainer");
+// Az input mező referenciája, ahová a felhasználó írja az üzenetét.
+const userInput = document.getElementById("userInput");
+// A küldés gomb referenciája.
+const sendMessageButton = document.getElementById("sendMessageButton");
+// A csevegés törlésére szolgáló gomb referenciája.
+const clearChatButton = document.getElementById("clearChatButton");
+// A kacsa ikon referenciája, ami kattintáskor működik.
+const minecraftDuck = document.getElementById("minecraftDuck");
+// A hangfájl referenciája, amely a kacsa hangját játssza le.
+const quackSound = document.getElementById("quackSound");
+
+// Az aktuális bejelentkezési adatok tárolására szolgáló objektum.
+let loginData = {
+  usernameOrEmail: '', // Felhasználónév vagy e-mail cím.
+  password: ''         // Jelszó.
+};
+
+// A regisztrációs adatok tárolására szolgáló objektum.
+let registrationData = {
+  fullName: '',             // Teljes név.
+  username: '',             // Felhasználónév.
+  email: '',                // E-mail cím.
+  password: '',             // Jelszó.
+  passwordConfirmation: ''  // Jelszó megerősítése.
+};
+
+// Az aktuális lépést jelző változó (0 alapértelmezett).
+let currentStep = 0; 
+
+// Üzenet megjelenítése a csevegőben.
+function displayMessage(message, sender = 'Oraculum') {
+  const messageDiv = document.createElement("div"); // Új div létrehozása az üzenethez.
+  messageDiv.classList.add("message", sender);      // Osztályok hozzáadása (pl. "user" vagy "Oraculum").
+
+  const bubbleDiv = document.createElement("div"); // Az üzenet buborékja.
+  bubbleDiv.classList.add("bubble");               // A buborék osztálya.
+  bubbleDiv.textContent = message;                 // Az üzenet szövegének beállítása.
+
+  messageDiv.appendChild(bubbleDiv);               // Az üzenet buborékját hozzáadjuk az üzenet divhez.
+  chatContainer.appendChild(messageDiv);           // Az üzenetet hozzáadjuk a csevegéshez.
+
+  chatContainer.scrollTop = chatContainer.scrollHeight; // Automatikus görgetés az üzenet aljára.
+}
+
+// Kezdő üzenet megjelenítése a felhasználónak.
+displayMessage("Oraculum: Ha lemondunk a vágyainkról, épp azt \t tagadjuk meg, ami emberré tesz.\nÍrj egy számot: 1 - Regisztráció, 2 - Login, 3 - Letöltés", 'Oraculum');
+
+// A felhasználói bemenet feldolgozása.
+function handleUserInput(input) {
+  if (currentStep === 0) { // Kezdő lépésnél dönthet a felhasználó.
+    if (input === "1" || input.toLowerCase() === "regisztráció") {
+      startRegistration(); // Regisztráció kezdése.
+    } else if (input === "2" || input.toLowerCase() === "login") {
+      startLogin();        // Bejelentkezés kezdése.
+    } else if (input === "3" || input.toLowerCase() === "letöltés") {
+      startDownload();     // Letöltés kezdése.
+    }
+  } else if (currentStep >= 1 && currentStep <= 6) {
+    handleRegistrationInput(input); // Regisztrációs adatok kezelése.
+  } else if (currentStep >= 7 && currentStep <= 8) {
+    handleLoginInput(input); // Bejelentkezési adatok kezelése.
+  }
+}
+
+// Az üzenet küldési eseménykezelője.
+sendMessageButton.addEventListener("click", () => {
+  const userMessage = userInput.value.trim(); // A felhasználó által beírt szöveg.
+  if (userMessage !== "") {
+    displayMessage(userMessage, 'user');    // Megjelenítjük az üzenetet.
+    handleUserInput(userMessage);          // Feldolgozzuk az üzenetet.
+    userInput.value = "";                  // Az input mezőt töröljük.
+  }
+});
+
+// Enter billentyű lenyomására is küldjük az üzenetet.
+userInput.addEventListener("keypress", (event) => {
+  if (event.key === "Enter") {
+    const userMessage = userInput.value.trim();
+    if (userMessage !== "") {
+      displayMessage(userMessage, 'user');
+      handleUserInput(userMessage);
+      userInput.value = "";
+    }
+  }
+});
+
+// A csevegés törlése a megfelelő gomb megnyomásakor.
+clearChatButton.addEventListener("click", () => {
+  chatContainer.innerHTML = ""; // Az összes üzenet eltávolítása.
+  displayMessage("Oraculum:  Ha lemondunk a vágyainkról, épp azt tagadjuk meg, ami emberré tesz.\nÍrj egy számot: 1 - Regisztráció, 2 - Login, 3 - Letöltés", 'Oraculum');
+});
+
+// A kacsa ikonra kattintáskor hangot játszik le.
+minecraftDuck.addEventListener("click", () => {
+  quackSound.play();
+});
+
+// Bejelentkezési folyamat indítása.
+function startLogin() {
+  currentStep = 7; // Első lépés a bejelentkezésnél.
+  displayMessage("Oraculum: Essünk túl a nyilvánvaló dolgokon: Kérlek add meg a felhasználóneved vagy email címed.", 'Oraculum');
+}
+
+// Bejelentkezési adatok kezelése.
+let loginSubStep = 0; // Alfejezet számláló.
+
+function handleLoginInput(input) {
+  if (currentStep === 7) {
+    loginData.usernameOrEmail = input; // Felhasználónév vagy email mentése.
+    loginSubStep = 1; // Alfejezet számláló kezdő értéke.
+    displayMessage(`Oraculum: [7.${loginSubStep}] Kérem adja meg a jelszavát.`, 'Oraculum');
+    currentStep = 8; // Következő lépés.
+    loginSubStep++;
+  } else if (currentStep === 8) {
+    loginData.password = input; // Jelszó mentése.
+    displayMessage(`Oraculum: [7.${loginSubStep}] A bejelentkezés sikeres!`, 'Oraculum');
+    currentStep = 0; // Vissza az alapállapotba.
+  }
+}
+
+// Regisztráció indítása.
+function startRegistration() {
+  currentStep = 1; // Első lépés a regisztrációnál.
+  displayMessage("Oraculum: Kérem adja meg a teljes nevét.", 'Oraculum');
+}
+
+// A regisztrációs adatok kezelése lépésenként.
+function handleRegistrationInput(input) {
+  if (currentStep === 1) {
+    registrationData.fullName = input; // Teljes név mentése.
+    displayMessage("Oraculum: Kérem adja meg a felhasználónevét.", 'Oraculum');
+    currentStep = 2;
+  } else if (currentStep === 2) {
+    registrationData.username = input; // Felhasználónév mentése.
+    displayMessage("Oraculum: Kérem adja meg az e-mail címét.", 'Oraculum');
+    currentStep = 3;
+  } else if (currentStep === 3) {
+    registrationData.email = input; // E-mail mentése.
+    displayMessage("Oraculum: Kérem adja meg a jelszót.", 'Oraculum');
+    currentStep = 4;
+  } else if (currentStep === 4) {
+    registrationData.password = input; // Jelszó mentése.
+    displayMessage("Oraculum: Kérem erősítse meg a jelszót.", 'Oraculum');
+    currentStep = 5;
+  } else if (currentStep === 5) {
+    registrationData.passwordConfirmation = input; // Jelszó megerősítésének mentése.
+    if (registrationData.password === registrationData.passwordConfirmation) {
+      displayMessage("Oraculum: A jelszavak egyeznek. Elküldi a regisztrációt?", 'Oraculum');
+      currentStep = 6; // Regisztrációs megerősítés lépése.
+    } else {
+      displayMessage("Oraculum: A jelszavak nem egyeznek. Kérem próbálja újra.", 'Oraculum');
+      currentStep = 4; // Vissza a jelszó megadásához.
+    }
+  } else if (currentStep === 6) {
+    if (input.toLowerCase() === "igen") {
+      saveRegistrationData(); // Regisztráció mentése.
+    } else {
+      displayMessage("Oraculum: A regisztrációt nem küldte el.", 'Oraculum');
+      currentStep = 0; // Vissza az alapállapotba.
+    }
+  }
+}
+
+// A regisztrációs adatok mentése (sikeres).
+function saveRegistrationData() {
+  displayMessage("Oraculum: A regisztráció sikeresen elmentve!", 'Oraculum');
+  currentStep = 0; // Vissza az alapállapotba.
+}
+
+// Billentyűzet események a csevegő görgetéséhez.
+document.addEventListener("keydown", (event) => {
+  const chatContainer = document.querySelector(".chat-container");
+  if (!chatContainer) return;
+
+  const scrollStep = 40; // Görgetés mértéke (px).
+  if (event.key === "ArrowDown") {
+    chatContainer.scrollBy({ top: scrollStep, behavior: "smooth" }); // Görgetés lefelé.
+  } else if (event.key === "ArrowUp") {
+    chatContainer.scrollBy({ top: -scrollStep, behavior: "smooth" }); // Görgetés felfelé.
+  }
+});
+
+    </script>
+  </body>
+  </html>
+  
